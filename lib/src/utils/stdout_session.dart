@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:console/console.dart';
-
 /// defines a stdout session that supports opening a "window" for subprocesses that has a limited height
 class StdoutSession {
   final _utf8Decoder = Utf8Decoder();
@@ -39,7 +37,7 @@ class StdoutSession {
       _drawWindow();
       await stdout.flush();
     } else {
-      Console.write(stringContent);
+      stdout.write(stringContent);
     }
 
     _writeCompleter = null;
@@ -58,7 +56,7 @@ class StdoutSession {
       _windowLines.clear();
       _currentWindowSize = height;
       _drawWindow();
-      Console.hideCursor();
+      stdout.write('\x1B[?25l'); // hide cursor
     }
   }
 
@@ -67,31 +65,33 @@ class StdoutSession {
     if (_currentWindowSize != null) {
       _drawWindow(doClear: true); // erase window
       _windowLines.clear();
-      Console.moveCursorUp(_lastDrawnWindowSize!);
+      if (_lastDrawnWindowSize != null && _lastDrawnWindowSize! > 0) {
+        stdout.write('\x1B[${_lastDrawnWindowSize}A');
+      }
       _currentWindowSize = null;
       _lastDrawnWindowSize = null;
-      Console.showCursor();
+      stdout.write('\x1B[?25h'); // show cursor
     }
   }
 
   void _drawWindow({bool doClear = false}) {
-    if (_lastDrawnWindowSize != null) {
-      Console.moveCursorUp(_lastDrawnWindowSize!);
+    if (_lastDrawnWindowSize != null && _lastDrawnWindowSize! > 0) {
+      stdout.write('\x1B[${_lastDrawnWindowSize}A');
     }
     if (_shouldUseColors) {
-      Console.setTextColor(Color.GRAY.id);
+      stdout.write('\x1B[90m'); // gray text
     }
     _lastDrawnWindowSize = _windowLines.length;
     for (var i = 0; i < _windowLines.length; i++) {
-      Console.eraseLine(2);
+      stdout.write('\x1B[2K'); // erase line
       if (!doClear) {
-        Console.write('> ${_windowLines[i]}');
+        stdout.write('> ${_windowLines[i]}');
       }
-      Console.moveCursorDown();
-      Console.moveToColumn(0);
+      stdout.write('\x1B[B'); // move cursor down
+      stdout.write('\r'); // move to column 0
     }
     if (_shouldUseColors) {
-      Console.resetTextColor();
+      stdout.write('\x1B[39m'); // reset text color
     }
   }
 }

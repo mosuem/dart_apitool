@@ -1,8 +1,11 @@
 import 'dart:math';
 
+import 'dart:io';
+
 import 'package:collection/collection.dart';
-import 'package:lumberdash/lumberdash.dart';
 import 'package:pub_semver/pub_semver.dart';
+
+import '../utils/utils.dart';
 
 import '../model/model.dart';
 import '../errors/errors.dart';
@@ -1297,8 +1300,8 @@ class PackageApiDiffer {
         // this can happen if the API is checked on a version that will be tweaked before publishing (e.g. turn path dependencies into pub refs)
         if (oldDependency.packageVersion == null ||
             newDependency.packageVersion == null) {
-          logWarning(
-              'Package dependency "$dependencyName" has a git or path dependency in one of the APIs. Skipping version check.');
+          stderr.writeln(ColorUtils.redError(
+              'Warning: Package dependency "$dependencyName" has a git or path dependency in one of the APIs. Skipping version check.'));
           continue;
         }
         final oldVersion =

@@ -14,7 +14,6 @@ import 'package:dart_apitool/src/analyze/exported_files_collector.dart';
 import 'package:dart_apitool/src/model/internal/internal_declaration.dart';
 import 'package:dart_apitool/src/model/internal/internal_type_alias_declaration.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:lumberdash/lumberdash.dart';
 import 'package:path/path.dart' as path;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
@@ -261,7 +260,8 @@ class PackageApiAnalyzer {
           }
         }
       } on StateError catch (e) {
-        logError('Problem parsing $fileToAnalyze: $e');
+        stderr
+            .writeln(ColorUtils.redError('Problem parsing $fileToAnalyze: $e'));
       }
     }
 
@@ -298,8 +298,8 @@ class PackageApiAnalyzer {
         final fieldList = entry.fieldDeclarations.map((e) => e.name).join(', ');
         final typeAliasList =
             entry.typeAliasDeclarations.map((e) => e.name).join(', ');
-        logWarning(
-            'We encountered elements that are marked to belong to an interface but the interface is not collected!\nExecutables: $executableList\nFields: $fieldList\nTypeAliases: $typeAliasList');
+        stderr.writeln(ColorUtils.redError(
+            'Warning: We encountered elements that are marked to belong to an interface but the interface is not collected!\nExecutables: $executableList\nFields: $fieldList\nTypeAliases: $typeAliasList'));
       }
     }
 

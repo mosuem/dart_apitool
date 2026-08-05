@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:colorize/colorize.dart';
-
 /// Utility class for handling colored terminal output.
 /// Automatically detects if stdout/stderr are attached to a terminal
 /// and disables colors when output is piped to a file.
@@ -14,44 +12,34 @@ class ColorUtils {
   static bool get shouldUseColorsForStderr =>
       stdioType(stderr) == StdioType.terminal;
 
-  /// Creates a colorized string for stdout output.
-  /// If stdout is not a terminal, returns the plain text without colors.
-  static String colorizeForStdout(
-      String text, Colorize Function(Colorize) style) {
-    if (shouldUseColorsForStdout) {
-      return style(Colorize(text)).toString();
-    }
-    return text;
-  }
-
-  /// Creates a colorized string for stderr output.
-  /// If stderr is not a terminal, returns the plain text without colors.
-  static String colorizeForStderr(
-      String text, Colorize Function(Colorize) style) {
-    if (shouldUseColorsForStderr) {
-      return style(Colorize(text)).toString();
+  static String _style(String text, String code, bool useColor) {
+    if (useColor && text.isNotEmpty) {
+      return '\x1B[${code}m$text\x1B[0m';
     }
     return text;
   }
 
   /// Convenience method for green text on stdout
-  static String green(String text) => colorizeForStdout(text, (c) => c.green());
+  static String green(String text) =>
+      _style(text, '32', shouldUseColorsForStdout);
 
   /// Convenience method for red text on stdout
-  static String red(String text) => colorizeForStdout(text, (c) => c.red());
+  static String red(String text) =>
+      _style(text, '31', shouldUseColorsForStdout);
 
   /// Convenience method for bold text on stdout
-  static String bold(String text) => colorizeForStdout(text, (c) => c.bold());
+  static String bold(String text) =>
+      _style(text, '1', shouldUseColorsForStdout);
 
   /// Convenience method for italic text on stdout
   static String italic(String text) =>
-      colorizeForStdout(text, (c) => c.italic());
+      _style(text, '3', shouldUseColorsForStdout);
 
   /// Convenience method for red text on stderr
   static String redError(String text) =>
-      colorizeForStderr(text, (c) => c.red());
+      _style(text, '31', shouldUseColorsForStderr);
 
   /// Convenience method for bold red text on stderr
   static String boldRedError(String text) =>
-      colorizeForStderr(text, (c) => c.red().bold());
+      _style(text, '1;31', shouldUseColorsForStderr);
 }

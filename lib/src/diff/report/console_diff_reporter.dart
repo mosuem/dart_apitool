@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:console/console.dart';
-
 import '../../../api_tool.dart';
 import '../../cli/commands/version_check.dart';
 import 'diff_reporter.dart';
@@ -77,6 +75,33 @@ class ConsoleDiffReporter extends DiffReporter {
     final nodes = nodeToTree(node,
         labelOverride: breaking ? 'BREAKING CHANGES' : 'Non-Breaking changes');
 
-    return nodes.isEmpty ? null : createTree(nodes);
+    return nodes.isEmpty ? null : _createTree(nodes);
+  }
+
+  String _createTree(Map<dynamic, dynamic> tree) {
+    final buffer = StringBuffer();
+    final label = tree['label']?.toString() ?? '';
+    buffer.writeln(label);
+    final nodes = tree['nodes'] as List<dynamic>? ?? [];
+    _writeTreeNodes(buffer, nodes, '');
+    return buffer.toString();
+  }
+
+  void _writeTreeNodes(
+      StringBuffer buffer, List<dynamic> nodes, String prefix) {
+    for (var i = 0; i < nodes.length; i++) {
+      final isLast = i == nodes.length - 1;
+      final connector = isLast ? '└── ' : '├── ';
+      final childPrefix = prefix + (isLast ? '    ' : '│   ');
+      final node = nodes[i];
+      if (node is Map) {
+        final label = node['label']?.toString() ?? '';
+        buffer.writeln('$prefix$connector$label');
+        final childNodes = node['nodes'] as List<dynamic>? ?? [];
+        _writeTreeNodes(buffer, childNodes, childPrefix);
+      } else {
+        buffer.writeln('$prefix$connector$node');
+      }
+    }
   }
 }

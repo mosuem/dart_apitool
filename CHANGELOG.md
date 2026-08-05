@@ -3,6 +3,7 @@
 ## Version 0.23.3
 - Remove unused `pubspec_manager` dependency.
 - Replace `stack`, `tuple`, and `plist_parser` dependencies with Dart SDK equivalents.
+- Remove `colorize`, `colorize_lumberdash`, `console`, and `lumberdash` in favor of standard ANSI escape sequences and stderr output.
 
 ## Version 0.23.2
 - `--set-exit-on-version-check-failure` to suppress exit code != 0 in case a mismatch is detected
