@@ -4,7 +4,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'package:path/path.dart' as path;
 import 'package:pubspec_parse/pubspec_parse.dart';
-import 'package:tuple/tuple.dart';
 
 import '../tooling/tooling.dart';
 
@@ -72,8 +71,7 @@ sealed class TypeIdentifier with _$TypeIdentifier {
         packageRelativeLibraryPath: packageRelativeLibraryPath,
       );
 
-  static final _libraryPathToPackageInfoCache =
-      <String, Tuple2<String, String>>{};
+  static final _libraryPathToPackageInfoCache = <String, (String, String)>{};
 
   factory TypeIdentifier.fromNameAndLibraryPath({
     required String typeName,
@@ -88,8 +86,8 @@ sealed class TypeIdentifier with _$TypeIdentifier {
       final cachedPackageInfo = _libraryPathToPackageInfoCache[libraryPath];
       return TypeIdentifier(
         typeName: typeName,
-        packageName: cachedPackageInfo!.item1,
-        packageRelativeLibraryPath: cachedPackageInfo.item2,
+        packageName: cachedPackageInfo!.$1,
+        packageRelativeLibraryPath: cachedPackageInfo.$2,
       );
     }
     if (libraryPath == null) {
@@ -111,7 +109,7 @@ sealed class TypeIdentifier with _$TypeIdentifier {
       final packageName = parts[0];
       // 4. the rest is the package relative library path
       final packageRelativeLibraryPath = parts.sublist(1).join('/');
-      _libraryPathToPackageInfoCache[libraryPath] = Tuple2(
+      _libraryPathToPackageInfoCache[libraryPath] = (
         packageName,
         packageRelativeLibraryPath,
       );
@@ -170,7 +168,7 @@ sealed class TypeIdentifier with _$TypeIdentifier {
     final packageRelativeLibraryPath =
         path.relative(libraryPath, from: pubspecDirectoryPath);
 
-    _libraryPathToPackageInfoCache[libraryPath] = Tuple2(
+    _libraryPathToPackageInfoCache[libraryPath] = (
       packageName,
       packageRelativeLibraryPath,
     );

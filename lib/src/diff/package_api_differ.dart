@@ -3,8 +3,6 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:lumberdash/lumberdash.dart';
 import 'package:pub_semver/pub_semver.dart';
-import 'package:stack/stack.dart';
-import 'package:tuple/tuple.dart';
 
 import '../model/model.dart';
 import '../errors/errors.dart';
@@ -52,21 +50,21 @@ class PackageApiDiffer {
         ..._calculateInterfacesDiff(
           oldApi.interfaceDeclarations,
           newApi.interfaceDeclarations,
-          Stack<Declaration>(),
+          <Declaration>[],
           isExperimental: false,
           typeHierarchy: mergedTypeHierarchy,
         ),
         ..._calculateExecutablesDiff(
           oldApi.executableDeclarations,
           newApi.executableDeclarations,
-          Stack<Declaration>(),
+          <Declaration>[],
           isExperimental: false,
           typeHierarchy: mergedTypeHierarchy,
         ),
         ..._calculateFieldsDiff(
           oldApi.fieldDeclarations,
           newApi.fieldDeclarations,
-          Stack<Declaration>(),
+          <Declaration>[],
           isExperimental: false,
           typeHierarchy: mergedTypeHierarchy,
         ),
@@ -128,7 +126,7 @@ class PackageApiDiffer {
   List<ApiChange> _calculateInterfacesDiff(
     List<InterfaceDeclaration> oldInterfaces,
     List<InterfaceDeclaration> newInterfaces,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     required bool isExperimental,
     required TypeHierarchy typeHierarchy,
   }) {
@@ -200,7 +198,7 @@ class PackageApiDiffer {
   List<ApiChange> _calculateInterfaceDiff(
     InterfaceDeclaration oldInterface,
     InterfaceDeclaration newInterface,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     required bool isExperimental,
     required TypeHierarchy typeHierarchy,
   }) {
@@ -290,7 +288,7 @@ class PackageApiDiffer {
   List<ApiChange> _calculateExecutablesDiff(
     List<ExecutableDeclaration> oldExecutables,
     List<ExecutableDeclaration> newExecutables,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     bool? isInterfaceRequired,
     required bool isExperimental,
     required TypeHierarchy typeHierarchy,
@@ -360,7 +358,7 @@ class PackageApiDiffer {
   List<ApiChange> _calculateExecutableDiff(
     ExecutableDeclaration oldExecutable,
     ExecutableDeclaration newExecutable,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     bool? isInterfaceRequired,
     required bool isExperimental,
     required TypeHierarchy typeHierarchy,
@@ -450,11 +448,10 @@ class PackageApiDiffer {
     });
   }
 
-  /// returns a [Tuple2] containing
-  /// - a [bool] indicating that the order between old and new changed amd
+  /// returns a record containing
+  /// - a [bool] indicating that the order between old and new changed and
   /// - a [Map] between old parameters and new parameters that match
-  Tuple2<bool,
-          Map<ExecutableParameterDeclaration, ExecutableParameterDeclaration>>
+  (bool, Map<ExecutableParameterDeclaration, ExecutableParameterDeclaration>)
       _findMatchesByName(
     List<ExecutableParameterDeclaration> oldParameters,
     List<ExecutableParameterDeclaration> newParameters,
@@ -481,7 +478,7 @@ class PackageApiDiffer {
         result[oldParameter] = matchingNewParameter;
       }
     }
-    return Tuple2(reordered, result);
+    return (reordered, result);
   }
 
   /// returns a [Map] between old parameters and new parameters that match
@@ -503,11 +500,10 @@ class PackageApiDiffer {
     return result;
   }
 
-  /// returns a [Tuple2] containing
-  /// - a [bool] indicating that the order between old and new changed amd
+  /// returns a record containing
+  /// - a [bool] indicating that the order between old and new changed and
   /// - a [Map] between old parameters and new parameters that match
-  Tuple2<bool,
-          Map<ExecutableParameterDeclaration, ExecutableParameterDeclaration>>
+  (bool, Map<ExecutableParameterDeclaration, ExecutableParameterDeclaration>)
       _findMatchingParameters(
     List<ExecutableParameterDeclaration> oldParameters,
     List<ExecutableParameterDeclaration> newParameters,
@@ -517,8 +513,8 @@ class PackageApiDiffer {
     // 1st, find matching names
     final matchedByNameTuple =
         _findMatchesByName(oldParametersCopy, newParametersCopy);
-    final reordered = matchedByNameTuple.item1;
-    final matchedByName = matchedByNameTuple.item2;
+    final reordered = matchedByNameTuple.$1;
+    final matchedByName = matchedByNameTuple.$2;
     // 2. remove them from the list
     for (final matchedOldParameter in matchedByName.keys) {
       oldParametersCopy.remove(matchedOldParameter);
@@ -531,21 +527,21 @@ class PackageApiDiffer {
         <ExecutableParameterDeclaration, ExecutableParameterDeclaration>{};
     result.addAll(matchedByName);
     result.addAll(matchedByTypeOrder);
-    return Tuple2(reordered, result);
+    return (reordered, result);
   }
 
   List<ApiChange> _calculateParametersDiff(
     List<ExecutableParameterDeclaration> oldParameters,
     List<ExecutableParameterDeclaration> newParameters,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     bool? isInterfaceRequired,
     required bool isExperimental,
     required TypeHierarchy typeHierarchy,
   }) {
     final parameterMatchesTuple =
         _findMatchingParameters(oldParameters, newParameters);
-    final parameterMatches = parameterMatchesTuple.item2;
-    final reordered = parameterMatchesTuple.item1;
+    final parameterMatches = parameterMatchesTuple.$2;
+    final reordered = parameterMatchesTuple.$1;
 
     final changes = <ApiChange>[];
     final oldParametersCopy = [...oldParameters];
@@ -572,7 +568,7 @@ class PackageApiDiffer {
     for (final removedParameter in oldParametersCopy) {
       changes.add(ApiChange(
         changeCode: ApiChangeCode.ce01,
-        affectedDeclaration: context.top(),
+        affectedDeclaration: context.last,
         contextTrace: _contextTraceFromStack(context),
         type: ApiChangeType.remove,
         isExperimental: isExperimental,
@@ -582,7 +578,7 @@ class PackageApiDiffer {
     for (final addedParameter in newParametersCopy) {
       changes.add(ApiChange(
         changeCode: ApiChangeCode.ce02,
-        affectedDeclaration: context.top(),
+        affectedDeclaration: context.last,
         contextTrace: _contextTraceFromStack(context),
         type: (isInterfaceRequired ?? false) || addedParameter.isRequired
             ? ApiChangeType.addBreaking
@@ -596,7 +592,7 @@ class PackageApiDiffer {
     if (reordered) {
       changes.add(ApiChange(
         changeCode: ApiChangeCode.ce04,
-        affectedDeclaration: context.top(),
+        affectedDeclaration: context.last,
         contextTrace: _contextTraceFromStack(context),
         type: ApiChangeType.changeBreaking,
         isExperimental: isExperimental,
@@ -610,7 +606,7 @@ class PackageApiDiffer {
   List<ApiChange> _calculateParameterDiff(
     ExecutableParameterDeclaration oldParam,
     ExecutableParameterDeclaration newParam,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     required bool isExperimental,
     required TypeHierarchy typeHierarchy,
   }) {
@@ -696,7 +692,7 @@ class PackageApiDiffer {
   List<ApiChange> _calculateEntryPointsDiff(
     Set<String>? oldEntryPoints,
     Set<String>? newEntryPoints,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     required bool isExperimental,
   }) {
     if (oldEntryPoints == null || newEntryPoints == null) {
@@ -714,7 +710,7 @@ class PackageApiDiffer {
       changes.add(ApiChange(
         changeCode: ApiChangeCode.cp01,
         contextTrace: _contextTraceFromStack(context),
-        affectedDeclaration: context.top(),
+        affectedDeclaration: context.last,
         changeDescription: 'New entry point: $newEntryPoint',
         type: ApiChangeType.addCompatibleMinor,
         isExperimental: isExperimental,
@@ -724,7 +720,7 @@ class PackageApiDiffer {
       changes.add(ApiChange(
         changeCode: ApiChangeCode.cp02,
         contextTrace: _contextTraceFromStack(context),
-        affectedDeclaration: context.top(),
+        affectedDeclaration: context.last,
         changeDescription: 'Entry point removed: $oldEntryPoint',
         type: ApiChangeType.remove,
         isExperimental: isExperimental,
@@ -736,7 +732,7 @@ class PackageApiDiffer {
   List<ApiChange> _calculateTypeParametersDiff(
     List<String> oldTypeParameterNames,
     List<String> newTypeParameterNames,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     bool? isInterfaceRequired,
     required bool isExperimental,
   }) {
@@ -747,7 +743,7 @@ class PackageApiDiffer {
           ApiChange(
             changeCode: ApiChangeCode.ci06,
             contextTrace: _contextTraceFromStack(context),
-            affectedDeclaration: context.top(),
+            affectedDeclaration: context.last,
             type: (isInterfaceRequired ?? false) ||
                     oldTypeParameterNames.length < newTypeParameterNames.length
                 ? ApiChangeType.addBreaking
@@ -766,7 +762,7 @@ class PackageApiDiffer {
       for (final removedTypeParameter in tpnListDiff.remainingOld) {
         changes.add(ApiChange(
             changeCode: ApiChangeCode.ci08,
-            affectedDeclaration: context.top(),
+            affectedDeclaration: context.last,
             contextTrace: _contextTraceFromStack(context),
             type: ApiChangeType.remove,
             isExperimental: isExperimental,
@@ -776,7 +772,7 @@ class PackageApiDiffer {
       for (final addedTypeParameter in tpnListDiff.remainingNew) {
         changes.add(ApiChange(
             changeCode: ApiChangeCode.ci07,
-            affectedDeclaration: context.top(),
+            affectedDeclaration: context.last,
             contextTrace: _contextTraceFromStack(context),
             type: ApiChangeType.addBreaking,
             isExperimental: isExperimental,
@@ -790,7 +786,7 @@ class PackageApiDiffer {
   List<ApiChange> _calculateSuperTypesDiff(
     Set<String> oldSuperTypes,
     Set<String> newSuperTypes,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     required bool isExperimental,
   }) {
     final stpnListDiff = _diffIterables<String>(
@@ -821,7 +817,7 @@ class PackageApiDiffer {
       changes.add(ApiChange(
           changeCode:
               ApiChangeCode.ci12, // New change code for supertype changes
-          affectedDeclaration: context.top(),
+          affectedDeclaration: context.last,
           contextTrace: _contextTraceFromStack(context),
           type: ApiChangeType
               .changeBreaking, // Supertype changes are typically breaking
@@ -833,7 +829,7 @@ class PackageApiDiffer {
     for (final removedSuperType in remainingOld) {
       changes.add(ApiChange(
           changeCode: ApiChangeCode.ci05,
-          affectedDeclaration: context.top(),
+          affectedDeclaration: context.last,
           contextTrace: _contextTraceFromStack(context),
           type: ApiChangeType.remove,
           isExperimental: isExperimental,
@@ -843,7 +839,7 @@ class PackageApiDiffer {
     for (final addedSuperType in remainingNew) {
       changes.add(ApiChange(
           changeCode: ApiChangeCode.ci04,
-          affectedDeclaration: context.top(),
+          affectedDeclaration: context.last,
           contextTrace: _contextTraceFromStack(context),
           type: ApiChangeType.addCompatibleMinor,
           isExperimental: isExperimental,
@@ -874,7 +870,7 @@ class PackageApiDiffer {
   List<ApiChange> _calculateFieldsDiff(
     List<FieldDeclaration> oldFieldDeclarations,
     List<FieldDeclaration> newFieldDeclarations,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     bool? isInterfaceRequired,
     required isExperimental,
     required TypeHierarchy typeHierarchy,
@@ -930,7 +926,7 @@ class PackageApiDiffer {
   List<ApiChange> _calculateFieldDiff(
     FieldDeclaration oldField,
     FieldDeclaration newField,
-    Stack<Declaration> context, {
+    List<Declaration> context, {
     required bool isExperimental,
     required TypeHierarchy typeHierarchy,
   }) {
@@ -1329,32 +1325,22 @@ class PackageApiDiffer {
     return result;
   }
 
-  List<Declaration> _contextTraceFromStack(Stack<Declaration> stack) {
-    final reverseBackup = Stack<Declaration>();
-    final result = <Declaration>[];
-    while (stack.isNotEmpty) {
-      final contextEntry = stack.pop();
-      reverseBackup.push(contextEntry);
-      result.add(contextEntry);
-    }
-    while (reverseBackup.isNotEmpty) {
-      stack.push(reverseBackup.pop());
-    }
-    return result;
+  List<Declaration> _contextTraceFromStack(List<Declaration> stack) {
+    return stack.reversed.toList();
   }
 
-  T _executeInContext<T>(Stack<Declaration> context, Declaration newContext,
-      T Function(Stack<Declaration> context) fun) {
-    context.push(newContext);
+  T _executeInContext<T>(List<Declaration> context, Declaration newContext,
+      T Function(List<Declaration> context) fun) {
+    context.add(newContext);
     final result = fun(context);
-    context.pop();
+    context.removeLast();
     return result;
   }
 
   void _compareParameterTypesAndAddChange(
     TypeIdentifier oldTypeidentifier,
     TypeIdentifier newTypeIdentifier,
-    Stack<Declaration> context,
+    List<Declaration> context,
     Declaration affectedDeclaration,
     String changeDescription,
     List<ApiChange> changes, {
@@ -1385,7 +1371,7 @@ class PackageApiDiffer {
   void _comparePropertiesAndAddChange<T>(
     T oldValue,
     T newValue,
-    Stack<Declaration> context,
+    List<Declaration> context,
     Declaration affectedDeclaration,
     String changeDescription,
     List<ApiChange> changes, {

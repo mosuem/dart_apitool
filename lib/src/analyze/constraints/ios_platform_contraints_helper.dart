@@ -1,10 +1,14 @@
 import 'dart:io';
 
 import 'package:path/path.dart' as path;
-import 'package:plist_parser/plist_parser.dart';
 import '../../model/model.dart';
 
 abstract class IOSPlatformConstraintsHelper {
+  static final _minimumOSVersionPlistPattern = RegExp(
+      r'<key>\s*MinimumOSVersion\s*<\/key>\s*<string>\s*(?<num>[0-9.]+)\s*<\/string>');
+  static final _minimumOSVersionPodspecPattern =
+      RegExp(r"platform\s*=\s*:ios\s*,\s*'(?<num>[0-9.]+)'");
+
   /// determines the AndroidPlaformConstrants for the given package path
   static Future<IOSPlatformConstraints?> getIOSPlatformConstraints({
     required String packagePath,
@@ -22,17 +26,18 @@ abstract class IOSPlatformConstraintsHelper {
         minimumOsVersion: null,
       );
       for (final plistFile in plistFiles) {
-        final plistContent = await PlistParser().parseFile(plistFile.path);
-        if (plistContent.containsKey('MinimumOSVersion')) {
-          final minimumOsVersionString = plistContent['MinimumOSVersion'];
-          final minimumOsVersion = num.tryParse(minimumOsVersionString);
-          if (minimumOsVersion != null) {
-            if (iosPlatformConstraints.minimumOsVersion == null ||
-                iosPlatformConstraints.minimumOsVersion! < minimumOsVersion) {
-              iosPlatformConstraints = iosPlatformConstraints.copyWith(
-                minimumOsVersion: minimumOsVersion,
-              );
-            }
+        if (plistFile is! File) {
+          continue;
+        }
+        final plistContent = await plistFile.readAsString();
+        final minimumOsVersion =
+            _getMinimumOsVersionFromPlistContent(plistContent);
+        if (minimumOsVersion != null) {
+          if (iosPlatformConstraints.minimumOsVersion == null ||
+              iosPlatformConstraints.minimumOsVersion! < minimumOsVersion) {
+            iosPlatformConstraints = iosPlatformConstraints.copyWith(
+              minimumOsVersion: minimumOsVersion,
+            );
           }
         }
       }
@@ -63,16 +68,18 @@ abstract class IOSPlatformConstraintsHelper {
     return null;
   }
 
+  static num? _getMinimumOsVersionFromPlistContent(String plistContent) {
+    if (_minimumOSVersionPlistPattern.firstMatch(plistContent)
+        case final match?) {
+      return num.tryParse(match.namedGroup('num')!);
+    }
+    return null;
+  }
+
   static num? _getMinimumOsVersionFromPodspecContent(String podspecContent) {
-    final minimumOsVersionMatches =
-        RegExp(r"platform\s*=\s*:ios\s*,\s*'(?<num>[0-9.]+)'")
-            .allMatches(podspecContent);
-    if (minimumOsVersionMatches.isNotEmpty) {
-      final minimumOsVersionString =
-          minimumOsVersionMatches.first.namedGroup('num');
-      if (minimumOsVersionString != null) {
-        return num.tryParse(minimumOsVersionString);
-      }
+    if (_minimumOSVersionPodspecPattern.firstMatch(podspecContent)
+        case final match?) {
+      return num.tryParse(match.namedGroup('num')!);
     }
     return null;
   }
