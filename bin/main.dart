@@ -3,12 +3,9 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:colorize_lumberdash/colorize_lumberdash.dart';
 import 'package:dart_apitool/api_tool_cli.dart';
-import 'package:lumberdash/lumberdash.dart';
 
 void main(List<String> arguments) async {
-  putLumberdashToWork(withClients: [ColorizeLumberdash()]);
   final runner = CommandRunner<int>('dart-apitool', '''
 dart-apitool (${ColorUtils.bold(await getOwnVersion())})
 

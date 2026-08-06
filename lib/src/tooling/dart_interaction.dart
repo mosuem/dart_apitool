@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:lumberdash/lumberdash.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:path/path.dart' as path;
 
@@ -52,12 +51,8 @@ abstract class DartInteraction {
     } else {
       final flutterExecutablePath = await _findFlutterExecutablePath();
       if (flutterExecutablePath == null) {
-        logWarning(
-          'Unable to find matching Flutter executable. Using system Flutter executable...',
-          extras: {
-            'dart executable': _getDartExecutablePath(),
-          },
-        );
+        stderr.writeln(ColorUtils.redError(
+            'Warning: Unable to find matching Flutter executable. Using system Flutter executable (dart executable: ${_getDartExecutablePath()})...'));
       }
       return _runDartOrFlutterCommand(
         flutterExecutablePath ?? 'flutter',
