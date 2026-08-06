@@ -1,29 +1,71 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'platform_constraints.freezed.dart';
-
-@freezed
-
 /// represents iOS platform constraints
-sealed class IOSPlatformConstraints with _$IOSPlatformConstraints {
-  const factory IOSPlatformConstraints({
-    /// minimum iOS version
-    required num? minimumOsVersion,
-  }) = _IOSPlatformConstraints;
-}
+class IOSPlatformConstraints {
+  /// minimum iOS version
+  final num? minimumOsVersion;
 
-@freezed
+  const IOSPlatformConstraints({
+    required this.minimumOsVersion,
+  });
+
+  IOSPlatformConstraints copyWith({
+    num? minimumOsVersion,
+  }) {
+    return IOSPlatformConstraints(
+      minimumOsVersion: minimumOsVersion ?? this.minimumOsVersion,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is IOSPlatformConstraints &&
+          runtimeType == other.runtimeType &&
+          minimumOsVersion == other.minimumOsVersion;
+
+  @override
+  int get hashCode => minimumOsVersion.hashCode;
+}
 
 /// represents Android platform constraints
-sealed class AndroidPlatformConstraints with _$AndroidPlatformConstraints {
-  const factory AndroidPlatformConstraints({
-    /// minimum SDK version
-    required int? minSdkVersion,
+class AndroidPlatformConstraints {
+  /// minimum SDK version
+  final int? minSdkVersion;
 
-    /// compile SDK version
-    required int? compileSdkVersion,
+  /// compile SDK version
+  final int? compileSdkVersion;
 
-    /// target SDK version
-    required int? targetSdkVersion,
-  }) = _AndroidPlatformConstraints;
+  /// target SDK version
+  final int? targetSdkVersion;
+
+  const AndroidPlatformConstraints({
+    required this.minSdkVersion,
+    required this.compileSdkVersion,
+    required this.targetSdkVersion,
+  });
+
+  AndroidPlatformConstraints copyWith({
+    int? minSdkVersion,
+    int? compileSdkVersion,
+    int? targetSdkVersion,
+  }) {
+    return AndroidPlatformConstraints(
+      minSdkVersion: minSdkVersion ?? this.minSdkVersion,
+      compileSdkVersion: compileSdkVersion ?? this.compileSdkVersion,
+      targetSdkVersion: targetSdkVersion ?? this.targetSdkVersion,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is AndroidPlatformConstraints &&
+          runtimeType == other.runtimeType &&
+          minSdkVersion == other.minSdkVersion &&
+          compileSdkVersion == other.compileSdkVersion &&
+          targetSdkVersion == other.targetSdkVersion;
+
+  @override
+  int get hashCode =>
+      Object.hash(minSdkVersion, compileSdkVersion, targetSdkVersion);
 }
+

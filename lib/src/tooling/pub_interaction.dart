@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:dart_apitool/src/tooling/dart_interaction.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';

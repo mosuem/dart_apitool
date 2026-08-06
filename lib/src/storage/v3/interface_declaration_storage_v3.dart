@@ -1,36 +1,76 @@
-// ignore: unused_import
-import 'package:analyzer/dart/element/element.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import '../../model/model.dart';
 import 'executable_declaration_storage_v3.dart';
 import 'field_declaration_storage_v3.dart';
 
-part 'interface_declaration_storage_v3.freezed.dart';
-part 'interface_declaration_storage_v3.g.dart';
-
 /// Represents a found class declaration
-@freezed
-sealed class InterfaceDeclarationStorageV3
-    with _$InterfaceDeclarationStorageV3 {
-  const InterfaceDeclarationStorageV3._();
+class InterfaceDeclarationStorageV3 {
+  final String name;
+  final bool isDeprecated;
+  final bool isExperimental;
+  final bool isSealed;
+  final bool isRequired;
+  final List<String> typeParameterNames;
+  final List<String> superTypeNames;
+  final List<ExecutableDeclarationStorageV3> executableDeclarations;
+  final List<FieldDeclarationStorageV3> fieldDeclarations;
+  final Set<String> entryPoints;
+  final String relativePath;
 
-  const factory InterfaceDeclarationStorageV3({
-    required String name,
-    required bool isDeprecated,
-    required bool isExperimental,
-    required bool isSealed,
-    required bool isRequired,
-    required List<String> typeParameterNames,
-    required List<String> superTypeNames,
-    required List<ExecutableDeclarationStorageV3> executableDeclarations,
-    required List<FieldDeclarationStorageV3> fieldDeclarations,
-    required Set<String> entryPoints,
-    required String relativePath,
-  }) = _InterfaceDeclarationStorageV3;
+  const InterfaceDeclarationStorageV3({
+    required this.name,
+    required this.isDeprecated,
+    required this.isExperimental,
+    required this.isSealed,
+    required this.isRequired,
+    required this.typeParameterNames,
+    required this.superTypeNames,
+    required this.executableDeclarations,
+    required this.fieldDeclarations,
+    required this.entryPoints,
+    required this.relativePath,
+  });
 
   factory InterfaceDeclarationStorageV3.fromJson(Map<String, Object?> json) =>
-      _$InterfaceDeclarationStorageV3FromJson(json);
+      InterfaceDeclarationStorageV3(
+        name: json['name'] as String,
+        isDeprecated: json['isDeprecated'] as bool,
+        isExperimental: json['isExperimental'] as bool,
+        isSealed: json['isSealed'] as bool,
+        isRequired: json['isRequired'] as bool,
+        typeParameterNames: (json['typeParameterNames'] as List<dynamic>)
+            .map((e) => e as String)
+            .toList(),
+        superTypeNames: (json['superTypeNames'] as List<dynamic>)
+            .map((e) => e as String)
+            .toList(),
+        executableDeclarations: (json['executableDeclarations'] as List<dynamic>)
+            .map((e) => ExecutableDeclarationStorageV3.fromJson(
+                e as Map<String, dynamic>))
+            .toList(),
+        fieldDeclarations: (json['fieldDeclarations'] as List<dynamic>)
+            .map((e) =>
+                FieldDeclarationStorageV3.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        entryPoints: (json['entryPoints'] as List<dynamic>)
+            .map((e) => e as String)
+            .toSet(),
+        relativePath: json['relativePath'] as String,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'isDeprecated': isDeprecated,
+        'isExperimental': isExperimental,
+        'isSealed': isSealed,
+        'isRequired': isRequired,
+        'typeParameterNames': typeParameterNames,
+        'superTypeNames': superTypeNames,
+        'executableDeclarations':
+            executableDeclarations.map((e) => e.toJson()).toList(),
+        'fieldDeclarations': fieldDeclarations.map((e) => e.toJson()).toList(),
+        'entryPoints': entryPoints.toList(),
+        'relativePath': relativePath,
+      };
 
   static InterfaceDeclarationStorageV3 fromInterfaceDeclaration(
       InterfaceDeclaration interfaceDeclaration) {
@@ -54,3 +94,4 @@ sealed class InterfaceDeclarationStorageV3
     );
   }
 }
+

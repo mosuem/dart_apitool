@@ -1,9 +1,4 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import '../../model/model.dart';
-
-part 'executable_declaration_storage_v3.freezed.dart';
-part 'executable_declaration_storage_v3.g.dart';
 
 /// Represents the type of executable found
 enum ExecutableTypeStorageV3 {
@@ -32,24 +27,46 @@ enum ExecutableTypeStorageV3 {
   }
 }
 
-@freezed
-sealed class ExecutableParameterDeclarationStorageV3
-    with _$ExecutableParameterDeclarationStorageV3 {
-  const ExecutableParameterDeclarationStorageV3._();
+class ExecutableParameterDeclarationStorageV3 {
+  final bool isRequired;
+  final bool isNamed;
+  final String name;
+  final bool isDeprecated;
+  final bool isExperimental;
+  final String typeName;
+  final String relativePath;
 
-  const factory ExecutableParameterDeclarationStorageV3({
-    required bool isRequired,
-    required bool isNamed,
-    required String name,
-    required bool isDeprecated,
-    required bool isExperimental,
-    required String typeName,
-    required String relativePath,
-  }) = _ExecutableParameterDeclarationStorageV3;
+  const ExecutableParameterDeclarationStorageV3({
+    required this.isRequired,
+    required this.isNamed,
+    required this.name,
+    required this.isDeprecated,
+    required this.isExperimental,
+    required this.typeName,
+    required this.relativePath,
+  });
 
   factory ExecutableParameterDeclarationStorageV3.fromJson(
           Map<String, Object?> json) =>
-      _$ExecutableParameterDeclarationStorageV3FromJson(json);
+      ExecutableParameterDeclarationStorageV3(
+        isRequired: json['isRequired'] as bool,
+        isNamed: json['isNamed'] as bool,
+        name: json['name'] as String,
+        isDeprecated: json['isDeprecated'] as bool,
+        isExperimental: json['isExperimental'] as bool,
+        typeName: json['typeName'] as String,
+        relativePath: json['relativePath'] as String,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'isRequired': isRequired,
+        'isNamed': isNamed,
+        'name': name,
+        'isDeprecated': isDeprecated,
+        'isExperimental': isExperimental,
+        'typeName': typeName,
+        'relativePath': relativePath,
+      };
 
   static ExecutableParameterDeclarationStorageV3
       fromExecutableParameterDeclaration(
@@ -67,26 +84,64 @@ sealed class ExecutableParameterDeclarationStorageV3
 }
 
 /// Represents an executable declaration
-@freezed
-sealed class ExecutableDeclarationStorageV3
-    with _$ExecutableDeclarationStorageV3 {
-  const ExecutableDeclarationStorageV3._();
+class ExecutableDeclarationStorageV3 {
+  final String returnTypeName;
+  final String name;
+  final bool isDeprecated;
+  final bool isExperimental;
+  final List<ExecutableParameterDeclarationStorageV3> parameters;
+  final List<String> typeParameterNames;
+  final ExecutableTypeStorageV3 type;
+  final bool isStatic;
+  final Set<String> entryPoints;
+  final String relativePath;
 
-  const factory ExecutableDeclarationStorageV3({
-    required String returnTypeName,
-    required String name,
-    required bool isDeprecated,
-    required bool isExperimental,
-    required List<ExecutableParameterDeclarationStorageV3> parameters,
-    required List<String> typeParameterNames,
-    required ExecutableTypeStorageV3 type,
-    required bool isStatic,
-    required Set<String> entryPoints,
-    required String relativePath,
-  }) = _ExecutableDeclarationStorageV3;
+  const ExecutableDeclarationStorageV3({
+    required this.returnTypeName,
+    required this.name,
+    required this.isDeprecated,
+    required this.isExperimental,
+    required this.parameters,
+    required this.typeParameterNames,
+    required this.type,
+    required this.isStatic,
+    required this.entryPoints,
+    required this.relativePath,
+  });
 
   factory ExecutableDeclarationStorageV3.fromJson(Map<String, Object?> json) =>
-      _$ExecutableDeclarationStorageV3FromJson(json);
+      ExecutableDeclarationStorageV3(
+        returnTypeName: json['returnTypeName'] as String,
+        name: json['name'] as String,
+        isDeprecated: json['isDeprecated'] as bool,
+        isExperimental: json['isExperimental'] as bool,
+        parameters: (json['parameters'] as List<dynamic>)
+            .map((e) => ExecutableParameterDeclarationStorageV3.fromJson(
+                e as Map<String, dynamic>))
+            .toList(),
+        typeParameterNames: (json['typeParameterNames'] as List<dynamic>)
+            .map((e) => e as String)
+            .toList(),
+        type: ExecutableTypeStorageV3.values.byName(json['type'] as String),
+        isStatic: json['isStatic'] as bool,
+        entryPoints: (json['entryPoints'] as List<dynamic>)
+            .map((e) => e as String)
+            .toSet(),
+        relativePath: json['relativePath'] as String,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'returnTypeName': returnTypeName,
+        'name': name,
+        'isDeprecated': isDeprecated,
+        'isExperimental': isExperimental,
+        'parameters': parameters.map((e) => e.toJson()).toList(),
+        'typeParameterNames': typeParameterNames,
+        'type': type.name,
+        'isStatic': isStatic,
+        'entryPoints': entryPoints.toList(),
+        'relativePath': relativePath,
+      };
 
   static ExecutableDeclarationStorageV3 fromExecutableDeclaration(
       ExecutableDeclaration executableDeclaration) {
@@ -108,3 +163,4 @@ sealed class ExecutableDeclarationStorageV3
     );
   }
 }
+

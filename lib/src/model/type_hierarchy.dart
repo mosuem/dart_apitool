@@ -1,19 +1,28 @@
 import 'dart:io';
 
-import 'package:freezed_annotation/freezed_annotation.dart';
-
+import 'package:collection/collection.dart';
 import 'package:path/path.dart' as path;
 import 'package:pubspec_parse/pubspec_parse.dart';
 
 import '../tooling/tooling.dart';
 
-part 'type_hierarchy.freezed.dart';
-
 /// represents a type identifier
 /// consists of name and full library name
-@freezed
-sealed class TypeIdentifier with _$TypeIdentifier {
-  const TypeIdentifier._();
+class TypeIdentifier {
+  /// the name of this type
+  final String typeName;
+
+  /// the name of the package defining that type
+  final String packageName;
+
+  /// the library path inside the package defining that type
+  final String packageRelativeLibraryPath;
+
+  const TypeIdentifier({
+    required this.typeName,
+    required this.packageName,
+    required this.packageRelativeLibraryPath,
+  });
 
   /// returns true if this type identifier contains the nullable flag
   bool get isNullable => isDynamic || typeName.endsWith('?');
@@ -41,17 +50,6 @@ sealed class TypeIdentifier with _$TypeIdentifier {
   String get nonNullablePackageAndTypeName =>
       '$packageName:$nonNullableTypeName';
 
-  const factory TypeIdentifier({
-    /// the name of this type
-    required String typeName,
-
-    /// the name of the package defining that type
-    required String packageName,
-
-    /// the library path inside the package defining that type
-    required String packageRelativeLibraryPath,
-  }) = _TypeIdentifier;
-
   @override
   String toString() {
     return '$packageName:$typeName ($packageRelativeLibraryPath)';
@@ -70,6 +68,20 @@ sealed class TypeIdentifier with _$TypeIdentifier {
         packageName: packageName,
         packageRelativeLibraryPath: packageRelativeLibraryPath,
       );
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TypeIdentifier &&
+          runtimeType == other.runtimeType &&
+          typeName == other.typeName &&
+          packageName == other.packageName &&
+          packageRelativeLibraryPath == other.packageRelativeLibraryPath;
+
+  @override
+  int get hashCode =>
+      Object.hash(typeName, packageName, packageRelativeLibraryPath);
+
 
   static final _libraryPathToPackageInfoCache = <String, (String, String)>{};
 
@@ -586,20 +598,36 @@ class _GenericTypeInfo {
 }
 
 /// represents a type in the type hierarchy
-@freezed
-sealed class _TypeHierarchyItem with _$TypeHierarchyItem {
-  const _TypeHierarchyItem._();
+class _TypeHierarchyItem {
+  /// the identifier of this type
+  final TypeIdentifier typeIdentifier;
 
-  const factory _TypeHierarchyItem({
-    /// the identifier of this type
-    required TypeIdentifier typeIdentifier,
+  /// the type identifiers of the super types of this type
+  final Set<TypeIdentifier> baseTypeIdentifiers;
 
-    /// the type identifiers of the super types of this type
-    required Set<TypeIdentifier> baseTypeIdentifiers,
-  }) = __TypeHierarchyItem;
+  const _TypeHierarchyItem({
+    required this.typeIdentifier,
+    required this.baseTypeIdentifiers,
+  });
 
   @override
   String toString() {
     return '$typeIdentifier [${baseTypeIdentifiers.join(', ')}]';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is _TypeHierarchyItem &&
+          runtimeType == other.runtimeType &&
+          typeIdentifier == other.typeIdentifier &&
+          const SetEquality<TypeIdentifier>()
+              .equals(baseTypeIdentifiers, other.baseTypeIdentifiers);
+
+  @override
+  int get hashCode => Object.hash(
+        typeIdentifier,
+        const SetEquality<TypeIdentifier>().hash(baseTypeIdentifiers),
+      );
 }
+

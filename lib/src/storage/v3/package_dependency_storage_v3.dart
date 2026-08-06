@@ -1,22 +1,25 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import '../../model/model.dart';
 
-part 'package_dependency_storage_v3.freezed.dart';
-part 'package_dependency_storage_v3.g.dart';
-
 /// represents a package dependency
-@freezed
-sealed class PackageDependencyStorageV3 with _$PackageDependencyStorageV3 {
-  const PackageDependencyStorageV3._();
+class PackageDependencyStorageV3 {
+  final String packageName;
+  final String? packageVersion;
 
-  const factory PackageDependencyStorageV3({
-    required String packageName,
-    required String? packageVersion,
-  }) = _PackageDependencyStorageV3;
+  const PackageDependencyStorageV3({
+    required this.packageName,
+    required this.packageVersion,
+  });
 
-  factory PackageDependencyStorageV3.fromJson(Map<String, Object?> json) =>
-      _$PackageDependencyStorageV3FromJson(json);
+  factory PackageDependencyStorageV3.fromJson(Map<String, dynamic> json) =>
+      PackageDependencyStorageV3(
+        packageName: json['packageName'] as String,
+        packageVersion: json['packageVersion'] as String?,
+      );
+
+  Map<String, dynamic> toJson() => {
+        'packageName': packageName,
+        'packageVersion': packageVersion,
+      };
 
   static PackageDependencyStorageV3 fromPackageDependency(
       PackageDependency packageDependency) {
@@ -26,3 +29,4 @@ sealed class PackageDependencyStorageV3 with _$PackageDependencyStorageV3 {
     );
   }
 }
+

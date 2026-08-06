@@ -13,7 +13,6 @@ import 'package:dart_apitool/src/analyze/api_relevant_elements_collector.dart';
 import 'package:dart_apitool/src/analyze/exported_files_collector.dart';
 import 'package:dart_apitool/src/model/internal/internal_declaration.dart';
 import 'package:dart_apitool/src/model/internal/internal_type_alias_declaration.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:path/path.dart' as path;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
@@ -26,7 +25,6 @@ import 'constraints/android_platform_constraints_helper.dart';
 import 'constraints/ios_platform_contraints_helper.dart';
 import 'dependencies/package_dependencies_helper.dart';
 
-part 'package_api_analyzer.freezed.dart';
 
 /// this class analyzes the public package API of a given package ([packagePath])
 class PackageApiAnalyzer {
@@ -586,12 +584,17 @@ class _InterfaceCollectionResult {
   final typeUsages = <InternalTypeUsage>{};
 }
 
-@freezed
-sealed class _FileToAnalyzeEntry with _$FileToAnalyzeEntry {
-  const factory _FileToAnalyzeEntry({
-    required String filePath,
-    @Default([]) List<String> shownNames,
-    @Default([]) List<String> hiddenNames,
-    required Set<String> exportedBy,
-  }) = __FileToAnalyzeEntry;
+class _FileToAnalyzeEntry {
+  final String filePath;
+  final List<String> shownNames;
+  final List<String> hiddenNames;
+  final Set<String> exportedBy;
+
+  const _FileToAnalyzeEntry({
+    required this.filePath,
+    this.shownNames = const [],
+    this.hiddenNames = const [],
+    required this.exportedBy,
+  });
 }
+

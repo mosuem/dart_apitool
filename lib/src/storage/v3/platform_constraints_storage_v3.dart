@@ -1,21 +1,20 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
 import '../../model/model.dart';
 
-part 'platform_constraints_storage_v3.freezed.dart';
-part 'platform_constraints_storage_v3.g.dart';
+class IOSPlatformConstraintsStorageV3 {
+  final num? minimumOsVersion;
 
-@freezed
-sealed class IOSPlatformConstraintsStorageV3
-    with _$IOSPlatformConstraintsStorageV3 {
-  const IOSPlatformConstraintsStorageV3._();
+  const IOSPlatformConstraintsStorageV3({
+    required this.minimumOsVersion,
+  });
 
-  const factory IOSPlatformConstraintsStorageV3({
-    required num? minimumOsVersion,
-  }) = _IOSPlatformConstraintsStorageV3;
+  factory IOSPlatformConstraintsStorageV3.fromJson(Map<String, dynamic> json) =>
+      IOSPlatformConstraintsStorageV3(
+        minimumOsVersion: json['minimumOsVersion'] as num?,
+      );
 
-  factory IOSPlatformConstraintsStorageV3.fromJson(Map<String, Object?> json) =>
-      _$IOSPlatformConstraintsStorageV3FromJson(json);
+  Map<String, dynamic> toJson() => {
+        'minimumOsVersion': minimumOsVersion,
+      };
 
   static IOSPlatformConstraintsStorageV3? fromIOSPlatformConstraints(
       IOSPlatformConstraints? iosPlatformConstraints) {
@@ -28,20 +27,30 @@ sealed class IOSPlatformConstraintsStorageV3
   }
 }
 
-@freezed
-sealed class AndroidPlatformConstraintsStorageV3
-    with _$AndroidPlatformConstraintsStorageV3 {
-  const AndroidPlatformConstraintsStorageV3._();
+class AndroidPlatformConstraintsStorageV3 {
+  final int? minSdkVersion;
+  final int? compileSdkVersion;
+  final int? targetSdkVersion;
 
-  const factory AndroidPlatformConstraintsStorageV3({
-    required int? minSdkVersion,
-    required int? compileSdkVersion,
-    required int? targetSdkVersion,
-  }) = _AndroidPlatformConstraintsStorageV3;
+  const AndroidPlatformConstraintsStorageV3({
+    required this.minSdkVersion,
+    required this.compileSdkVersion,
+    required this.targetSdkVersion,
+  });
 
   factory AndroidPlatformConstraintsStorageV3.fromJson(
-          Map<String, Object?> json) =>
-      _$AndroidPlatformConstraintsStorageV3FromJson(json);
+          Map<String, dynamic> json) =>
+      AndroidPlatformConstraintsStorageV3(
+        minSdkVersion: (json['minSdkVersion'] as num?)?.toInt(),
+        compileSdkVersion: (json['compileSdkVersion'] as num?)?.toInt(),
+        targetSdkVersion: (json['targetSdkVersion'] as num?)?.toInt(),
+      );
+
+  Map<String, dynamic> toJson() => {
+        'minSdkVersion': minSdkVersion,
+        'compileSdkVersion': compileSdkVersion,
+        'targetSdkVersion': targetSdkVersion,
+      };
 
   static AndroidPlatformConstraintsStorageV3? fromAndroidPlatformConstraints(
       AndroidPlatformConstraints? constraints) {
@@ -55,3 +64,4 @@ sealed class AndroidPlatformConstraintsStorageV3
     );
   }
 }
+

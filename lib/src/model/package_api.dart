@@ -1,57 +1,116 @@
-import 'package:dart_apitool/api_tool.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:pub_semver/pub_semver.dart';
 
-part 'package_api.freezed.dart';
+import 'declaration.dart';
+import 'executable_declaration.dart';
+import 'field_declaration.dart';
+import 'interface_declaration.dart';
+import 'package_api_semantics.dart';
+import 'package_dependency.dart';
+import 'platform_constraints.dart';
+import 'sdk_type.dart';
+import 'type_alias_declaration.dart';
+import 'type_hierarchy.dart';
 
 /// represents the model of a public package API.
-@freezed
-sealed class PackageApi with _$PackageApi {
-  const PackageApi._();
+class PackageApi {
+  /// name of the package
+  final String packageName;
 
-  const factory PackageApi({
-    /// name of the package
-    required String packageName,
+  /// version of the package
+  final String? packageVersion;
 
-    /// version of the package
-    required String? packageVersion,
+  /// path to the package
+  final String packagePath;
 
-    /// path to the package
-    required String packagePath,
+  /// interface declarations this package has
+  final List<InterfaceDeclaration> interfaceDeclarations;
 
-    /// interface declarations this package has
-    required List<InterfaceDeclaration> interfaceDeclarations,
+  /// root level executable declarations this package has
+  final List<ExecutableDeclaration> executableDeclarations;
 
-    /// root level executable declarations this package has
-    required List<ExecutableDeclaration> executableDeclarations,
+  /// root level field declarations this package has
+  final List<FieldDeclaration> fieldDeclarations;
 
-    /// root level field declarations this package has
-    required List<FieldDeclaration> fieldDeclarations,
+  /// type alias declarations this package has
+  final List<TypeAliasDeclaration> typeAliasDeclarations;
 
-    /// type alias declarations this package has
-    required List<TypeAliasDeclaration> typeAliasDeclarations,
+  /// the semantics of this model. This indicates if this model is compatible (e.g. for diffing) with another model
+  final Set<PackageApiSemantics> semantics;
 
-    /// the semantics of this model. This indicates if this model is compatible (e.g. for diffing) with another model
-    @Default(<PackageApiSemantics>{}) Set<PackageApiSemantics> semantics,
+  /// used Android platform constraints
+  final AndroidPlatformConstraints? androidPlatformConstraints;
 
-    /// used Android platform constraints
+  /// used iOS platform constraints
+  final IOSPlatformConstraints? iosPlatformConstraints;
+
+  /// type of sdk needed
+  final SdkType sdkType;
+
+  /// package dependencies
+  final List<PackageDependency> packageDependencies;
+
+  /// minimum sdk version
+  final Version minSdkVersion;
+
+  /// the type hierarchy of the public API
+  final TypeHierarchy typeHierarchy;
+
+  const PackageApi({
+    required this.packageName,
+    required this.packageVersion,
+    required this.packagePath,
+    required this.interfaceDeclarations,
+    required this.executableDeclarations,
+    required this.fieldDeclarations,
+    required this.typeAliasDeclarations,
+    this.semantics = const <PackageApiSemantics>{},
+    this.androidPlatformConstraints,
+    this.iosPlatformConstraints,
+    required this.sdkType,
+    required this.packageDependencies,
+    required this.minSdkVersion,
+    required this.typeHierarchy,
+  });
+
+  PackageApi copyWith({
+    String? packageName,
+    String? packageVersion,
+    String? packagePath,
+    List<InterfaceDeclaration>? interfaceDeclarations,
+    List<ExecutableDeclaration>? executableDeclarations,
+    List<FieldDeclaration>? fieldDeclarations,
+    List<TypeAliasDeclaration>? typeAliasDeclarations,
+    Set<PackageApiSemantics>? semantics,
     AndroidPlatformConstraints? androidPlatformConstraints,
-
-    /// used iOS platform constraints
     IOSPlatformConstraints? iosPlatformConstraints,
+    SdkType? sdkType,
+    List<PackageDependency>? packageDependencies,
+    Version? minSdkVersion,
+    TypeHierarchy? typeHierarchy,
+  }) {
+    return PackageApi(
+      packageName: packageName ?? this.packageName,
+      packageVersion: packageVersion ?? this.packageVersion,
+      packagePath: packagePath ?? this.packagePath,
+      interfaceDeclarations:
+          interfaceDeclarations ?? this.interfaceDeclarations,
+      executableDeclarations:
+          executableDeclarations ?? this.executableDeclarations,
+      fieldDeclarations: fieldDeclarations ?? this.fieldDeclarations,
+      typeAliasDeclarations:
+          typeAliasDeclarations ?? this.typeAliasDeclarations,
+      semantics: semantics ?? this.semantics,
+      androidPlatformConstraints:
+          androidPlatformConstraints ?? this.androidPlatformConstraints,
+      iosPlatformConstraints:
+          iosPlatformConstraints ?? this.iosPlatformConstraints,
+      sdkType: sdkType ?? this.sdkType,
+      packageDependencies: packageDependencies ?? this.packageDependencies,
+      minSdkVersion: minSdkVersion ?? this.minSdkVersion,
+      typeHierarchy: typeHierarchy ?? this.typeHierarchy,
+    );
+  }
 
-    /// type of sdk needed
-    required SdkType sdkType,
-
-    /// package dependencies
-    required List<PackageDependency> packageDependencies,
-
-    /// minimum sdk version
-    required Version minSdkVersion,
-
-    /// the type hierarchy of the public API
-    required TypeHierarchy typeHierarchy,
-  }) = _PackageApi;
 
   /// returns all root level declarations of this package that don't have any entry points
   Iterable<Declaration>
@@ -69,4 +128,10 @@ sealed class PackageApi with _$PackageApi {
   static bool _isUsedOutsideTests(InterfaceDeclaration interfaceDeclaration) {
     return interfaceDeclaration.typeUsages.any((tu) => !tu.isVisibleForTesting);
   }
+
+  @override
+  String toString() =>
+      'PackageApi(packageName: $packageName, packageVersion: $packageVersion, packagePath: $packagePath, interfaceDeclarations: $interfaceDeclarations, executableDeclarations: $executableDeclarations, fieldDeclarations: $fieldDeclarations, typeAliasDeclarations: $typeAliasDeclarations, semantics: $semantics, androidPlatformConstraints: $androidPlatformConstraints, iosPlatformConstraints: $iosPlatformConstraints, sdkType: $sdkType, packageDependencies: $packageDependencies, minSdkVersion: $minSdkVersion, typeHierarchy: $typeHierarchy)';
 }
+
+
